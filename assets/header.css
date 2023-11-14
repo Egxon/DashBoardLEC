@@ -1,0 +1,155 @@
+.app-header {
+    height: 70px;
+    line-height: 60px;
+    border-bottom: thin lightgrey solid;
+    text-align: center
+}
+
+.app-header .app-header--title {
+
+    padding-left: 5px;
+    font-weight: 1;
+
+}
+
+.firstsection {
+
+    display: flex;
+    justify-content: space-around;
+
+    margin-bottom: 20px;
+    margin-top: 20px;
+
+
+}
+
+.container {
+
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 50% 50%;
+  justify-content: space-around;
+  align-items: center;
+
+  gap: 5px 5px;
+  grid:
+    "a b "
+    "aa bb ";
+  gap: 15px;
+
+
+}
+.a {
+    grid-area: a
+
+
+}
+.aa {
+    display: flex;
+    border-color: red;
+    justify-content: space-around;
+    align-items: center;
+    gap: 50px;
+    margin-bottom: 20px;
+    margin-top: 20px;
+    padding-left: 20%
+
+}
+
+.bb {
+    display: flex;
+    border-color: red;
+    justify-content: space-around;
+    align-items: center;
+    gap: 51px;
+    margin-bottom: 20px;
+    margin-top: 20px;
+    padding-left: 20%
+
+}
+
+.b {
+    grid-area: b
+
+}
+
+.secondsection {
+    display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 50% 50%;
+  justify-content: space-around;
+  align-items: center;
+
+  gap: 5px 5px;
+  grid:
+    " secondsection-a "
+    " secondsection-b ";
+  gap: 15px;
+
+
+
+}
+
+.secondsection-a{
+
+    grid-area: secondsection-a
+
+
+}
+
+.secondsection-b{
+
+
+    display: flex;
+    border-color: red;
+    justify-content: space-around;
+    align-items: center;
+    gap: 50px;
+    margin-bottom: 20px;
+    margin-top: 20px;
+    padding-left: 20%
+    grid-area: secondsection-b
+
+
+}
+
+.thirdsection {
+    display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 50% 50%;
+  justify-content: space-around;
+  align-items: center;
+
+  gap: 5px 5px;
+  grid:
+    " thirdsection-a "
+    " thirdsection-b ";
+  gap: 15px;
+
+
+
+}
+
+.thirdsection-a{
+
+    grid-area: thirdsection-a
+
+
+}
+
+.thirdsection-b{
+
+
+    display: flex;
+    border-color: red;
+    justify-content: space-around;
+    align-items: center;
+    gap: 50px;
+    margin-bottom: 20px;
+    margin-top: 20px;
+    padding-left: 20%
+    grid-area: thirdsection-b
+
+
+}
+
