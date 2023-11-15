@@ -21,6 +21,8 @@ polar_light = base64.b64encode(open(image1_filename, 'rb').read())
 final_pos = graph_position.getGraphPos()
 final_pos2 = graph_position.getGraphPosTMP()
 
+
+
 #Get All Datas et DF
 name = request.getName()
 team = request.getTeam()
@@ -97,6 +99,7 @@ scatter2.update_layout(
 
 
 
+
 app.layout = html.Div([
     html.Div(
         className="app-header",
@@ -161,14 +164,13 @@ app.layout = html.Div([
             ])
 
         ]),
-    #dash_table.DataTable(data=df.to_dict('records'), page_size=10, sort_action="native"),
-    #dash_table.DataTable(data=df3.to_dict('records'), page_size=1, sort_action="native"),
+
 
 html.Div(
         className="secondsection",
         children=[html.Div(className="secondsection-a",
                            children=[
-                    dcc.Graph(figure=None, id="nom")]),
+                    dcc.Graph(figure=scatter2, id="nom")]),
 
             html.Div(html.Div(className="secondsection-b",
                               children=[
@@ -222,7 +224,26 @@ html.Div(
                                                                              ]))
                                                            ])]),
 
+             html.Div(id="test", children=[]),
+                html.Div(children="AAAAAAAAAAAAAAAAAAAAA"),
+            html.H1(children="AAAAAAAAAAAAAAAAAAAAA"),
+            dcc.Slider(id="dashSlider", min=min(final_pos2['gameTime']), max=max(final_pos2['gameTime']), value=min(final_pos2['gameTime']),
+                       )
+
+            
+
+
+
                     ])
+@app.callback(
+    Output("test", "children"),
+    Input("dashSlider", "value"),
+)
+def setFrame(frame):
+    print(frame)
+    return frame
+
+
 
 @app.callback(
 
@@ -238,8 +259,6 @@ def update_POS(matchIdPos,currIdPos):
     print(currIdPos)
 
     final_pos2 = final_pos[(final_pos['current'] == currIdPos) & (final_pos['matchUrn'] == matchIdPos )]
-
-
 
     print("fel1")
 
