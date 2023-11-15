@@ -23,6 +23,50 @@
 
 }
 
+.bigG{
+    display:flex;
+    background-color:blue;
+
+    justify-content:space-around
+}
+
+.bigG-block{
+
+    background-color:red;
+
+    display:flex;
+    flex-direction: column;
+
+
+}
+
+.bigG-block-top{
+
+    background-color:green;
+
+    display:flex;
+
+}
+
+.bigG-block-bot{
+
+    background-color:yellow;
+
+    display:flex;
+    justify-content:space-around;
+    gap: 10px;
+
+}
+
+.bigG-block-bot-items{
+
+    background-color:pink;
+
+    display:flex;
+}
+
+
+
 .container {
 
   display: grid;

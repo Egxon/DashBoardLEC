@@ -2,121 +2,38 @@ from dash import *
 import sqlite3
 import pandas as pd
 import plotly.express as px
-from sqlite3 import Error
+
 from PIL import Image
 import base64
-
 import dash_bootstrap_components as dbc
 from dash_bootstrap_components.themes import LUX
-
 from dash_bootstrap_templates import load_figure_template
 from packaging import markers
 from skimage import io
-
-
 import plotly.graph_objects as go
-
-
-conn = None
-try :
-    conn = sqlite3.connect("tab.db")
-    cur = conn.cursor()
-except Error as e :
-    print(e)
-
-image1_filename = 'Minimap.jpg'
+import connect_bd
+import graph_position
+import request
+cur = connect_bd.getBD()
+conn = connect_bd.getConBD()
+image1_filename = 'images/Minimap.jpg'
 polar_light = base64.b64encode(open(image1_filename, 'rb').read())
+final_pos = graph_position.getGraphPos()
+final_pos2 = graph_position.getGraphPosTMP()
 
-pos = pd.read_sql("select posx, posy, gameTime,name, current from position  ", conn)
-pos = pd.DataFrame(pos, columns=['posx', 'posy', 'gameTime', 'name','current'])
+#Get All Datas et DF
+name = request.getName()
+team = request.getTeam()
+df = request.getDf()
+df2= request.getDf2()
+df3 = request.getDf3()
+df4= request.getDf4()
+name_tmp = request.getNameTmp()
+match =  request.getMatch()
 
-
-pos_posx = []
-pos_posy = []
-pos_name = []
-pos_gameTime =[]
-pos_series = []
-
-ser = set()
-tmp_limit = 2500
-
-#print(pos['current'].unique())
-
-srs = [i for i in pos['current'].unique()]
-
-pos_player = [i for i in pos['name'].unique()]
-
-
-
-
-for k in srs :
-    for p in pos_player:
-        tmp_limit = 2500
-
-        for x,y,gt,n,curr in (pos[(pos['current'] == k) & (pos['name'] == p)].values):
-
-
-            if (int(gt) >= int(tmp_limit)) :
-                tmp_limit += 2500
-                pos_posx.append(x)
-                pos_posy.append(y)
-                pos_name.append(n)
-                pos_gameTime.append(gt)
-                pos_series.append(curr)
-
-
-
-
-final_pos = {
-  "posx": pos_posx,
-  "posy": pos_posy,
-  "name":  pos_name,
-   "gameTime" : pos_gameTime,
-   "current" : pos_series
-
-}
-
-
-
-final_pos = pd.DataFrame(final_pos)
-
-final_pos['gameTime'] = pd.to_datetime(final_pos['gameTime'], unit='ms').dt.time
-
-
-final_pos2= final_pos[(final_pos['current'] == "1")]
-
-
-
-
-#pos = pos[pos['name'] == 'T1 Faker']
-
-
-
-name = cur.execute("select distinct P.name as name,M.matchId as matchUrn from match M, player P, team T where P.teamName = T.name")
-name = pd.DataFrame(name,columns=['name', 'matchUrn'])
-
-sql_queryTeam = pd.read_sql('select distinct MatchId, teamOne, teamTwo from match', conn)
-team = pd.DataFrame(sql_queryTeam, columns=['MatchId', 'teamOne', 'teamTwo',])
-
-
-sql_query = pd.read_sql('select name,totalGold, matchUrn,current from StatsPlayer;', conn)
-df = pd.DataFrame(sql_query, columns=['name', 'totalGold', 'matchUrn','current',])
 totalG = df[(df['matchUrn'] == "esports:match:b3590072-d7dd-4d8c-b307-b671b3760075") & (df['current'] == "1")]
-
-
-sql_query2 = pd.read_sql("select name, team , current , matchUrn,SUM(kill+assist) as KP from StatsPlayer group by name, team,current, matchUrn", conn)
-df2 = pd.DataFrame(sql_query2, columns=['name', 'team', 'current', 'matchUrn' , 'KP'])
-
 pie = px.pie(df2, values='KP', names='name', title="KP", width=800)
-
-
-sql_query3 = pd.read_sql("select name , namePlayer, posx,posy, current , matchUrn from Action ;", conn)
-df3 = pd.DataFrame(sql_query3, columns=['name', 'namePlayer', 'posx', 'posy', 'current','matchUrn' ])
 player_data = df3[df3['namePlayer'] == "T1 Zeus"]
-
-
-sql_query4 = pd.read_sql("select MatchId,current from Match", conn)
-df4 = pd.DataFrame(sql_query4, columns=['MatchId', 'current'])
 match_data = df4[df4['MatchId'] == "esports:match:b3590072-d7dd-4d8c-b307-b671b3760075"]
 
 choice = {"One Game" : "One Game",
@@ -128,16 +45,9 @@ opt = [
         ]
 
 
-
-name_tmp = cur.execute("select name,name from player where teamName ='T1' ")
-name_tmp = name_tmp.fetchall()
-
-name_tmp = dict(name_tmp)
-
 matchD = {}
 matchN = {}
-match = cur.execute("SELECT distinct teamOne,teamTwo,matchId FROM Match;")
-match = match.fetchall()
+
 for i in match:
     matchD[i[2]] = [i[0] + " VS " + i[1]]
 
@@ -145,13 +55,8 @@ for i in match:
     matchN[i[0] + " VS " + i[1]] = [i[2]]
 
 
-#CurSeries = {}
-#CurSeries = cur.execute("select * from Match")
-#CurSeries = CurSeries.fetchall()
-#CurSeries = df3[df3['namePlayer'] == 'nom']
 
-
-
+app = Dash(external_stylesheets=[dbc.themes.SLATE])
 scatter = px.scatter(player_data, x='posx', y='posy', color="name", range_x=[0,15000], range_y=[0,15000])
 scatter.update_traces(marker_size=20)
 
@@ -190,7 +95,7 @@ scatter2.update_layout(
         sizing="stretch",
         layer="below")])
 
-app = Dash(external_stylesheets=[dbc.themes.SLATE])
+
 
 app.layout = html.Div([
     html.Div(
@@ -200,54 +105,62 @@ app.layout = html.Div([
         ]
     ),
 
-    html.Div(
-        className="container",
-        children=[
-            html.Div(className="a",
-                     children=[
-            dcc.Graph(id="totalGold",figure= px.histogram(totalG, x='name', y='totalGold', histfunc='max', color='totalGold', width=800, title="Total gold of LNG vs T1 , series 1")),
-                     html.Div(className="aa",
-                                children=[dcc.Dropdown(
+    html.Div(className="bigG", children=[
+        html.Div(className="bigG-block", children=[
+            html.Div(className="bigG-block-top", children=[
+
+                dcc.Graph(id="totalGold",figure= px.histogram(totalG, x='name', y='totalGold', histfunc='max', color='totalGold', title="Total gold of LNG vs T1 , series 1"))
+            ]),
+
+            html.Div(className="bigG-block-bot", children=[
+
+                    dcc.Dropdown(
                     id='match',
                     options=matchD,
-                    style = {'width': "50%" ,'display': "block", 'text-align' : "center" , 'color':"red" },
-
-                    value="esports:match:b3590072-d7dd-4d8c-b307-b671b3760075"
-                 ), dcc.Dropdown(
+                    style = {'width': "100%" ,'color':"red" , 'text-align' : "center"},
+                    value ='esports:match:b3590072-d7dd-4d8c-b307-b671b3760075'),
+                    dcc.Dropdown(
                     id='menuCurr',
                     options=opt,
-                    style = {'width': "50%" ,'display': "block", 'text-align' : "center" , 'color':"blue" },
-                    value='1'
-                 )],
+                    style = {'width': "100%" , 'text-align' : "center" , 'color':"blue" },
+                    value='1'),
 
-                                )
-                     ]
-        ),
-            html.Div(className="b",
-                     children=[
-            dcc.Graph(id="pie-KP",figure=pie ),
-                         html.Div(className="bb",
-                                  children=[dcc.Dropdown(
-                    id='match-KP',
-                    options=matchD,
-                    style = {'width': "70%" ,'display': "block", 'text-align' : "center" , 'color':"red" },
-                    value="esports:match:b3590072-d7dd-4d8c-b307-b671b3760075"
-                 ), dcc.Dropdown(
-                    id='menuCurr-KP',
-                    options={"e": "e"},
-                    style = {'width': "70%" ,'display': "block", 'text-align' : "center" , 'color':"blue" },
-                    value='1'
-                 ), dcc.Dropdown(
-                    id='team-KP',
-                    options={"LNG": "LNG"},
-                    style = {'width': "70%" ,'display': "block", 'text-align' : "center" , 'color':"blue" },
-                    value='LNG'
-                 )])
-                     ]
-        ),
 
-        ],
-    ),
+            ]),
+
+
+
+        ]),
+
+        html.Div(className="bigG-block", children=[
+
+            html.Div(className="bigG-block-top",children=[
+
+                    html.Div(dcc.Graph(id="pie-KP",figure= pie))
+
+            ]),
+
+            html.Div(className="bigG-block-bot", children=[dcc.Dropdown(
+                        id='match-KP',
+                        options=matchD,
+                        style = {'width': "100%" ,'display': "block", 'text-align' : "center" , 'color':"red" },
+                        value="esports:match:b3590072-d7dd-4d8c-b307-b671b3760075"
+                     ), dcc.Dropdown(
+                        id='menuCurr-KP',
+                        options={"e": "e"},
+                        style = {'width': "100%" ,'display': "block", 'text-align' : "center" , 'color':"blue" },
+                        value='1'
+                     ), dcc.Dropdown(
+                        id='team-KP',
+                        options={"LNG": "LNG"},
+                        style = {'width': "100%" ,'display': "block", 'text-align' : "center" , 'color':"blue" },
+                        value='LNG'
+                     )]),
+
+
+            ])
+
+        ]),
     #dash_table.DataTable(data=df.to_dict('records'), page_size=10, sort_action="native"),
     #dash_table.DataTable(data=df3.to_dict('records'), page_size=1, sort_action="native"),
 
@@ -255,7 +168,7 @@ html.Div(
         className="secondsection",
         children=[html.Div(className="secondsection-a",
                            children=[
-                    dcc.Graph(figure=scatter, id="nom")]),
+                    dcc.Graph(figure=None, id="nom")]),
 
             html.Div(html.Div(className="secondsection-b",
                               children=[
@@ -286,13 +199,13 @@ html.Div(
     ),
 
     html.Div(className="secondsection",children=[
-             html.Div(className="secondsection-a",children=[dcc.Graph(figure=scatter2),
+             html.Div(className="secondsection-a",children=[dcc.Graph(id="graph-pos",figure=scatter2),
                                                            html.Div(html.Div(className="secondsection-b",
                                                                              children=[
                                                                                  dcc.Dropdown(
                                                                                      id='match-POS',
                                                                                      options=matchD,
-                                                                                     style={'width' : "50%",
+                                                                                     style={'width' : "100%",
                                                                                             'display' : "block",
                                                                                             'text-align' : "center",
                                                                                             'color' : "red"},
@@ -301,7 +214,7 @@ html.Div(
                                                                                  dcc.Dropdown(
                                                                                      id='series-POS',
                                                                                      options={"e" : "e"},
-                                                                                     style={'width' : "50%",
+                                                                                     style={'width' : "100%",
                                                                                             'display' : "block",
                                                                                             'text-align' : "center",
                                                                                             'color' : "red"},
@@ -310,6 +223,70 @@ html.Div(
                                                            ])]),
 
                     ])
+
+@app.callback(
+
+    Output(component_id='graph-pos', component_property='figure'),
+    Input(component_id='match-POS', component_property='value'),
+    Input(component_id='series-POS', component_property='value'),
+)
+def update_POS(matchIdPos,currIdPos):
+    # En fonction de la valeur sélectionnée dans le premier Dropdown,
+    # vous pouvez définir les options du deuxième Dropdown ici.
+
+    print(matchIdPos)
+    print(currIdPos)
+
+    final_pos2 = final_pos[(final_pos['current'] == currIdPos) & (final_pos['matchUrn'] == matchIdPos )]
+
+
+
+    print("fel1")
+
+
+    fig = px.scatter(final_pos2, x='posx', y='posy', color="name", animation_frame="gameTime", range_x=[0, 15000],
+                          range_y=[0, 15000])
+
+    print("fel2")
+    fig.update_traces(marker_size=10)
+
+    print("fel3")
+    fig.update_layout(
+        autosize=True,
+        width=1000,
+        height=1000,
+        images=[dict(
+            source='data:image/jpg;base64,{}'.format(polar_light.decode()),
+            xref="paper", yref="paper",
+            x=0, y=1,  # position of the upper left corner of the image in subplot 1,1
+            sizex=1, sizey=1,  # sizex, sizey are set by trial and error
+            xanchor="left",
+            yanchor="top",
+            # height="800",
+
+            sizing="stretch",
+            layer="below")])
+    print("fel4")
+
+
+    return fig
+
+@app.callback(
+
+    Output(component_id='series-POS', component_property='options'),
+    Input(component_id='match-POS', component_property='value')
+)
+
+def update_menucurrPOS(value):
+    # En fonction de la valeur sélectionnée dans le premier Dropdown,
+    # vous pouvez définir les options du deuxième Dropdown ici.
+    opt = {}
+    match_data = df4[df4['MatchId'] == value]
+    for i in match_data['current'] :
+        opt[i] = i
+
+    return opt
+
 
 @app.callback(
 
