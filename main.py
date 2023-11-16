@@ -3,6 +3,7 @@ from dash import dcc, html
 from dash.dependencies import Input, Output
 import dash_bootstrap_components as dbc
 from dash import *
+import asyncio
 from PIL import Image
 import sqlite3
 import pandas as pd
@@ -21,6 +22,14 @@ import plotly.graph_objects as go
 import connect_bd
 import graph_position
 import request
+############################################################
+
+
+
+
+
+
+##############################################################
 
 # Initialisation de l'application Dash
 app = Dash(external_stylesheets=[dbc.themes.SLATE], suppress_callback_exceptions=True)
@@ -543,6 +552,7 @@ def display_page(pathname):
                                                                     ]))
                                                   ])
                                ]),
+
 
 
         ])

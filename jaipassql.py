@@ -4,6 +4,9 @@ conn = connect_bd.getConBD()
 cur = connect_bd.getBD()
 import pandas as pd
 
+sql = "SELECT posx, posy FROM Position"
+
+
 pos = pd.read_sql("select champName, result from StatsPlayer", conn)
 pos = pd.DataFrame(pos, columns=['champName','result'])
 print(pos)
