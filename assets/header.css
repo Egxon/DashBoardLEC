@@ -26,14 +26,14 @@
 .bigG{
     display:flex;
     background-color:blue;
-
+    gap: 50px;
     justify-content:space-around
 }
 
 .bigG-block{
 
     background-color:red;
-
+    gap: 20px;
     display:flex;
     flex-direction: column;
 
