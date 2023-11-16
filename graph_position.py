@@ -55,9 +55,11 @@ def getOner():
     pos_gameTime = []
     pos_series = []
     pos_urn = []
-    req = "select posx,posy,gameTime,name,current,matchUrn from ExactPosition where name='T1 Oner'and gameTime <= 130000"
+    req = "select posx,posy,round(gameTime/1000)*1000 as gameTime,name,current,matchUrn from ExactPosition where name='T1 Oner'and gameTime <= 130000"
     pos = pd.read_sql(req, conn)
     pos = pd.DataFrame(pos, columns=['posx', 'posy', 'gameTime', 'name','current','matchUrn'])
+    print(pos['gameTime'])
+
 
 
     final_pos = pd.DataFrame(pos)
@@ -66,7 +68,7 @@ def getOner():
     return final_pos
 
 def getBegPlayer(player):
-    req = "select posx,posy,gameTime,name,current,matchUrn from ExactPosition where name='%s'and gameTime <= 110000 and gameTime >= 45000 " % player
+    req = "select posx,posy,round(gameTime/1000)*1000 as gameTime,name,current,matchUrn from ExactPosition where name='%s'and gameTime <= 110000 and gameTime >= 45000 " % player
     pos = pd.read_sql(req, conn)
     pos = pd.DataFrame(pos, columns=['posx', 'posy', 'gameTime', 'name', 'current', 'matchUrn'])
 
