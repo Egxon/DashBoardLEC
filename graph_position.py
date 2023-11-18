@@ -4,94 +4,39 @@ import connect_bd
 conn = connect_bd.getConBD()
 
 
-Oner = pd.read_sql("select posx, posy, gameTime,name, current,matchUrn from position where name='T1 Oner'and gameTime <= 130000  ", conn)
-Oner = pd.DataFrame(Oner, columns=['posx', 'posy', 'gameTime', 'name','current','matchUrn'])
 
+def getMoveEarly(player=None):
+    if player == None:
+        req = "select posx,posy,round(gameTime/1000)*1000 as gameTime,name,current,matchUrn from ExactPosition where name='T1 Oner'and gameTime <= 130000"
+    else:
+        req = "select posx,posy,round(gameTime/1000)*1000 as gameTime,name,current,matchUrn from ExactPosition where name='%s'and gameTime <= 110000 and gameTime >= 45000 " % player
 
-pos = pd.read_sql("select posx, posy, gameTime,name, current,matchUrn from position  ", conn)
-pos = pd.DataFrame(pos, columns=['posx', 'posy', 'gameTime', 'name','current','matchUrn'])
-
-pos_posx = []
-pos_posy = []
-pos_name = []
-pos_gameTime =[]
-pos_series = []
-pos_urn =[]
-tmp_limit = 2500
-
-srs = [i for i in pos['current'].unique()]
-pos_player = [i for i in pos['name'].unique()]
-
-for k in srs :
-    for p in pos_player:
-        tmp_limit = 3500
-        for x,y,gt,n,curr,urn in (pos[(pos['current'] == k) & (pos['name'] == p)].values):
-
-            if (int(gt) >= int(tmp_limit)) :
-                tmp_limit += 3500
-                pos_posx.append(x)
-                pos_posy.append(y)
-                pos_name.append(n)
-                pos_gameTime.append(gt)
-                pos_series.append(curr)
-                pos_urn.append(urn)
+    pos = pd.read_sql(req, conn)
+    pos = pd.DataFrame(pos, columns=['posx', 'posy', 'gameTime', 'name','current','matchUrn'])
+    final_pos = pd.DataFrame(pos)
+    return final_pos
 
 
 
-final_pos = {
-  "posx": pos_posx,
-  "posy": pos_posy,
-  "name":  pos_name,
-   "gameTime" : pos_gameTime,
-   "current" : pos_series,
-    "matchUrn": pos_urn
-}
-
-
-def getOner():
+#Renvoie la dataframe des positions des joueurs durant la game
+def getCurrentPos(matchUrn=None,current=None):
     pos_posx = []
     pos_posy = []
     pos_name = []
     pos_gameTime = []
     pos_series = []
     pos_urn = []
-    req = "select posx,posy,round(gameTime/1000)*1000 as gameTime,name,current,matchUrn from ExactPosition where name='T1 Oner'and gameTime <= 130000"
+    if matchUrn != None and current != None:
+        req = "select posx, posy, gameTime,name, current,matchUrn from position where current ='%s' and matchUrn = '%s'" % (current,matchUrn)
+        print(req)
+    else:
+
+        req = "select posx, posy, gameTime,name, current,matchUrn from position where current ='1' and matchUrn ='esports:match:b3590072-d7dd-4d8c-b307-b671b3760075'"
+        print(req)
     pos = pd.read_sql(req, conn)
     pos = pd.DataFrame(pos, columns=['posx', 'posy', 'gameTime', 'name','current','matchUrn'])
-    print(pos['gameTime'])
-
-
-
-    final_pos = pd.DataFrame(pos)
-
-
-    return final_pos
-
-def getBegPlayer(player):
-    req = "select posx,posy,round(gameTime/1000)*1000 as gameTime,name,current,matchUrn from ExactPosition where name='%s'and gameTime <= 110000 and gameTime >= 45000 " % player
-    pos = pd.read_sql(req, conn)
-    pos = pd.DataFrame(pos, columns=['posx', 'posy', 'gameTime', 'name', 'current', 'matchUrn'])
-
-    final_pos = pd.DataFrame(pos)
-
-    return final_pos
-
-
-
-def getCurrent(current):
-    pos_posx = []
-    pos_posy = []
-    pos_name = []
-    pos_gameTime = []
-    pos_series = []
-    pos_urn = []
-    req = "select posx, posy, gameTime,name, current,matchUrn from position where current ='%s'" % current
-    pos = pd.read_sql(req, conn)
-    pos = pd.DataFrame(pos, columns=['posx', 'posy', 'gameTime', 'name','current','matchUrn'])
-
 
     pos_player = [i for i in pos['name'].unique()]
-
 
     for p in pos_player :
         tmp_limit = 3500
@@ -121,15 +66,13 @@ def getCurrent(current):
     return final_pos
 
 
+#Renvoie la dataframe des positions des joueurs durant la game LNG  vs T1 current 1
 
 
 
-final_pos = pd.DataFrame(final_pos)
-
-final_pos['gameTime'] = pd.to_datetime(final_pos['gameTime'], unit='ms').dt.time
 
 def getGraphPos():
+    pos = pd.read_sql("select posx, posy, gameTime,name, current,matchUrn from position  ", conn)
+    pos = pd.DataFrame(pos, columns=['posx', 'posy', 'gameTime', 'name', 'current', 'matchUrn'])
     return pos
 
-def getGraphPosTMP():
-    return final_pos[(final_pos['current'] == "1")]
