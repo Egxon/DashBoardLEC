@@ -268,7 +268,9 @@ def display_page(pathname):
             html.H3('Graphiques'),
             html.Div(className="bigG", children=[
                 html.Div(className="bigG-block", children=[
-                    html.Div(className="bigG-block-top", children=[
+                    html.Div(className="bigG-block-top", children=[figure=px.histogram(totalG, x='name', y='totalGold', histfunc='max',
+                                                                      color='totalGold',
+                                                                      title="Total gold of LNG vs T1 , series 1"))
 
                         dcc.Graph(id="totalGold", figure=px.histogram(totalG, x='name', y='totalGold', histfunc='max',
                                                                       color='totalGold',
